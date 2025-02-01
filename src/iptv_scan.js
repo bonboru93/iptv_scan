@@ -1,4 +1,5 @@
 import fs from "fs"
+import path from "path"
 import { pipeline } from "stream/promises"
 import Handlebars from "handlebars"
 import ky from "ky"
@@ -9,10 +10,10 @@ import open from "open"
 import { rimraf } from "rimraf"
 
 const main = async (prefixUrl, idStart, idEnd) => {
-    const resultDir = new URL('result/', import.meta.url)
-    const dataDir = new URL('data/', resultDir)
+    const resultDir = path.join(import.meta.dirname, 'result')
+    const dataDir = path.join(resultDir, 'data')
 
-    await rimraf(dataDir.pathname)
+    await rimraf(dataDir)
 
     const api = ky.create({ prefixUrl })
 
@@ -22,10 +23,10 @@ const main = async (prefixUrl, idStart, idEnd) => {
         try {
             const m3u8 = await api.get(`${i}/index.m3u8`).text()
 
-            const currentDataDir = new URL(`${i}/`, dataDir)
+            const currentDataDir = path.join(dataDir, String(i))
             fs.mkdirSync(currentDataDir, { recursive: true })
 
-            fs.writeFileSync(new URL('index.m3u8', currentDataDir), m3u8)
+            fs.writeFileSync(path.join(currentDataDir, 'index.m3u8'), m3u8)
 
             const parser = new m3u8Parser.Parser()
             parser.push(m3u8)
@@ -33,7 +34,7 @@ const main = async (prefixUrl, idStart, idEnd) => {
 
             const videoUri = parser.manifest.segments[0].uri.replace(/\?.+/, '')
             const videoResponse = await api.get(`${i}/${videoUri}`)
-            await pipeline(videoResponse.body, fs.createWriteStream(new URL(videoUri, currentDataDir)))
+            await pipeline(videoResponse.body, fs.createWriteStream(path.join(currentDataDir, videoUri)))
 
             const rate = Math.ceil(videoResponse.headers.get('content-length') / 1024 / 1024)
 
@@ -49,12 +50,12 @@ const main = async (prefixUrl, idStart, idEnd) => {
 
     items.sort((a, b) => b.rate - a.rate)
 
-    let template = fs.readFileSync(new URL('template.hbs', import.meta.url), { encoding: 'utf-8' })
+    let template = fs.readFileSync(path.join(import.meta.dirname, 'template.hbs'), { encoding: 'utf-8' })
     template = Handlebars.compile(template)
     const page = template({ prefixUrl, items })
-    fs.writeFileSync(new URL('index.html', resultDir), page)
+    fs.writeFileSync(path.join(resultDir, 'index.html'), page)
 
-    http.createServer((request, response) => handler(request, response, { public: resultDir.pathname }))
+    http.createServer((request, response) => handler(request, response, { public: resultDir }))
         .listen(12345, () => open('http://localhost:12345'))
 }
 

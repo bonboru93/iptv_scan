@@ -1,6 +1,8 @@
-const loadVideo = (videoNode, videoSrc) => {
+const loadVideo = videoNode => {
+    const videoSrc = videoNode.dataset.src
+
     if (Hls.isSupported()) {
-        const hls = new Hls({ startPosition: 1 })
+        const hls = new Hls({ fragLoadingMaxRetry: 0, startPosition: 1 })
         hls.loadSource(videoSrc)
         hls.attachMedia(videoNode)
     }
@@ -9,9 +11,13 @@ const loadVideo = (videoNode, videoSrc) => {
     }
 }
 
-for (const v of document.querySelectorAll('video')) {
-    loadVideo(v, v.dataset.src)
-}
+const intersectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    const node = entry.target
+    if (!entry.isIntersecting || node.src) { return }
+    loadVideo(node)
+    intersectionObserver.unobserve(node)
+}))
+document.querySelectorAll('video').forEach(v => intersectionObserver.observe(v))
 
 const generate = () => {
     const items = {}
