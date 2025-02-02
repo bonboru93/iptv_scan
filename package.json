@@ -1,6 +1,7 @@
 {
   "name": "iptv-scan",
-  "version": "1.0.0",
+  "version": "1.0.3",
+  "description": "iptv source scan",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,10 +17,14 @@
     "iptv-scan",
     "m3u8"
   ],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bonboru93/iptv_scan.git"
+  },
+  "homepage": "https://github.com/bonboru93/iptv_scan#readme",
+  "author": "bonboru93",
   "license": "ISC",
   "type": "module",
-  "description": "",
   "dependencies": {
     "handlebars": "^4.7.8",
     "ky": "^1.7.4",
