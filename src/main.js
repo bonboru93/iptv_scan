@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from "fs"
 import path from "path"
 import { pipeline } from "stream/promises"
@@ -8,11 +10,14 @@ import http from "http"
 import handler from "serve-handler"
 import open from "open"
 import { rimraf } from "rimraf"
+import minimist from "minimist"
+import assert from "assert"
+
+const resultDir = path.join(import.meta.dirname, 'result')
+const dataDir = path.join(resultDir, 'data')
+
 
 const main = async (prefixUrl, idStart, idEnd) => {
-    const resultDir = path.join(import.meta.dirname, 'result')
-    const dataDir = path.join(resultDir, 'data')
-
     await rimraf(dataDir)
 
     const api = ky.create({ prefixUrl })
@@ -44,7 +49,6 @@ const main = async (prefixUrl, idStart, idEnd) => {
         }
         catch {
             console.log(i, 'error')
-
         }
     }
 
@@ -59,4 +63,23 @@ const main = async (prefixUrl, idStart, idEnd) => {
         .listen(12345, () => open('http://localhost:12345'))
 }
 
-export default main
+
+// === cmd ===
+const { p, s, e } = minimist(process.argv.slice(2))
+try {
+    new URL(p)
+    assert.equal(typeof s, 'number')
+    assert.equal(typeof e, 'number')
+
+    main(p, s, e)
+}
+catch {
+    console.log('用法：-p <地址前缀> -s <开始ID> -e <结束ID>')
+    console.log('示例: -p http://ott.chinamobile.com/PLTV/88888888 -s 3221235000 -e 3221235999')
+}
+
+process.on('SIGINT', async () => {
+    console.log('\ncleanup...')
+    await rimraf(dataDir)
+    process.exit(0)
+})

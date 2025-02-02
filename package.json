@@ -1,12 +1,21 @@
 {
-  "name": "iptv_scan",
+  "name": "iptv-scan",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "bin": {
+    "iptv-scan": "./src/main.js"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "iptv",
+    "scan",
+    "iptv-scan",
+    "m3u8"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",
@@ -15,6 +24,7 @@
     "handlebars": "^4.7.8",
     "ky": "^1.7.4",
     "m3u8-parser": "^7.2.0",
+    "minimist": "^1.2.8",
     "open": "^10.1.0",
     "rimraf": "^6.0.1",
     "serve-handler": "^6.1.6"
